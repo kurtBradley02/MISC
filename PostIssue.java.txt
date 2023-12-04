@@ -1,0 +1,67 @@
+package api;
+/*
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.io.BufferedReader;*/
+
+import java.io.IOException;
+import java.util.Base64;
+
+import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
+
+public class PostIssue {
+	
+	//For Unit Testing
+	public static void main(String[]args) throws ClientProtocolException, IOException {
+		PostIssue runApi = new PostIssue();
+        
+		//change path parameter
+        runApi.postIssue();
+	}
+	
+	public void postIssue() throws ClientProtocolException, IOException {
+		
+		String jiraDomain = "https://yourprojectdomain.atlassian.net";
+        String createIssueUrl = jiraDomain + "/rest/api/2/issue";
+        String user = ""; // Email address 
+        String token = ""; // API token generated from Atlassian account > Security > Manage > Api Tokens
+
+        HttpClient client = HttpClients.createDefault();
+        HttpPost postRequest = new HttpPost(createIssueUrl);
+        postRequest.setHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString((user + ":" + token).getBytes()));
+        postRequest.setHeader("Content-Type", "application/json");
+
+        //Add values for fields, if appending another set of json, use JSONObject.
+        //use .put dot notation for appending first level fields
+        JSONObject issueDetails = new JSONObject();
+        issueDetails.put("fields", new JSONObject()
+            .put("project", new JSONObject().put("key", "TES"))
+            .put("summary", "summary")
+            .put("description", "description")
+            .put("issuetype", new JSONObject().put("name", "BUG"))); 
+
+        // Set the JSON object as the request entity
+        StringEntity requestEntity = new StringEntity(issueDetails.toString());
+        postRequest.setEntity(requestEntity);
+
+        // Execute the request
+        HttpResponse response = client.execute(postRequest);
+        String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
+
+        // Output the response for debugging
+        System.out.println(responseString);
+	}
+
+}
