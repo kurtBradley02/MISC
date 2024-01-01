@@ -1,0 +1,25 @@
+package Practice01;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+public class TestDate {
+    public static void main(String[] args) {
+        // Get the current date and time
+        LocalDateTime now = LocalDateTime.now();
+
+        // Format the date as "1/1/2024"
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        String currentDate = now.format(dateFormatter);
+
+        // Get time 10 minutes from now
+        LocalDateTime timePlusTenMinutes = now.plusMinutes(10);
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm a");
+        String timeInTenMinutes = timePlusTenMinutes.format(timeFormatter);
+
+        // Combine date and time in the final string
+        String finalString = currentDate + " " + timeInTenMinutes;
+        System.out.println(finalString);
+    }
+}
+
