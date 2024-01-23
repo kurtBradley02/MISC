@@ -1,0 +1,2 @@
+        String jsonPayload = "{\"fields\": {\"project\": {\"key\": \"\"}, \"summary\": \"" + summary + "\", \"description\": \"" + description + "\", \"issuetype\": {\"name\": \"Bug\"}}}";
+ 
