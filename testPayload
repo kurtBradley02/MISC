@@ -1,2 +1,58 @@
-        String jsonPayload = "{\"fields\": {\"project\": {\"key\": \"\"}, \"summary\": \"" + summary + "\", \"description\": \"" + description + "\", \"issuetype\": {\"name\": \"Bug\"}}}";
- 
+// Configurations
+        String jiraUrl = "https://codeoflives001.atlassian.net/rest/api/2/issue";
+        String filePath = pathToFile;
+        String user = "codeoflives001@gmail.com"; // Jira username/email
+        String token = "ATATT3xFfGF0SIKmdPz067WDOb5CxIqgFmpgcTeB2p1g07wA1OfqZ96D9rcdb5ck7TFEjlK9vCJkDp_e6HBM6FheSJLQ5GpK-f_vY809TfrTbZP__0x5rupXC3XQTOsW7A5v6Uhj2CLTvn2gHnehW4i1PvUQEg3fhLF8uoqqxR-CQE777_p6p9Q=42972E3E"; // Jira API token
+
+        HttpClient client = HttpClients.createDefault();
+
+        // Step 1: Create a new Jira issue
+        HttpPost createIssue = new HttpPost(jiraUrl);
+        createIssue.setHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString((user + ":" + token).getBytes()));
+        createIssue.setHeader("Content-Type", "application/json");
+
+        String jsonPayload = "{\"fields\": {\"project\": {\"key\": \"TES\"}, \"summary\": \"" + summary + "\", \"description\": \"" + description + "\", \"issuetype\": {\"name\": \"Bug\"}}}";
+        StringEntity issueEntity = new StringEntity(jsonPayload);
+        createIssue.setEntity(issueEntity);
+
+        HttpResponse issueResponse = client.execute(createIssue);
+        String issueKey = null;
+        if (issueResponse.getStatusLine().getStatusCode() == 201) {
+            HttpEntity entity = issueResponse.getEntity();
+            if (entity != null) {
+                String responseString = EntityUtils.toString(entity);
+                JSONObject jsonResponse = new JSONObject(responseString);
+
+                // Extract the issue key correctly
+                if (jsonResponse.has("key")) {
+                    issueKey = jsonResponse.getString("key");
+                } else {
+                    System.out.println("Key not found in the response");
+                    return;
+                }
+            }
+        } else {
+            System.out.println("Issue creation failed: " + issueResponse.getStatusLine());
+            // Handle error appropriately
+            return;
+        }
+
+        // Step 2: Attach the file to the issue
+        String attachmentUrl = "https://codeoflives001.atlassian.net/rest/api/2/issue/" + issueKey + "/attachments";
+        HttpPost postAttachment = new HttpPost(attachmentUrl);
+        postAttachment.setHeader("X-Atlassian-Token", "no-check");
+        postAttachment.setHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString((user + ":" + token).getBytes()));
+
+        File fileToUpload = new File(filePath);
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        builder.addBinaryBody("file", fileToUpload, ContentType.DEFAULT_BINARY, fileToUpload.getName());
+
+        postAttachment.setEntity(builder.build());
+
+        HttpResponse attachmentResponse = client.execute(postAttachment);
+        if (attachmentResponse.getStatusLine().getStatusCode() == 200) {
+            System.out.println("File attached successfully");
+        } else {
+            System.out.println("Failed to attach file: " + attachmentResponse.getStatusLine());
+        }
